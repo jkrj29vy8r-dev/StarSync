@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -34,42 +35,43 @@ export function FAQ() {
 
   return (
     <section id="faq" className="relative mx-auto max-w-3xl px-6 py-24">
-      <SectionHeading eyebrow="Întrebări frecvente" title="Tot ce trebuie să știi" />
+      <Reveal>
+        <SectionHeading eyebrow="Întrebări frecvente" title="Tot ce trebuie să știi" />
+      </Reveal>
 
       <div className="mt-12 space-y-3">
         {ITEMS.map((item, i) => {
           const isOpen = open === i;
           return (
-            <div
-              key={item.q}
-              className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111315] shadow-inset-hairline"
-            >
-              <button
-                onClick={() => setOpen(isOpen ? null : i)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-              >
-                <span className="text-sm font-medium tracking-tight text-ink">{item.q}</span>
-                <ChevronDown
-                  className={cn(
-                    "h-4 w-4 shrink-0 text-ink/40 transition-transform duration-300",
-                    isOpen && "rotate-180 text-emerald-glow"
+            <Reveal key={item.q} delay={i * 0.06}>
+              <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111315] shadow-inset-hairline">
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+                >
+                  <span className="text-sm font-medium tracking-tight text-ink">{item.q}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 shrink-0 text-ink/40 transition-transform duration-300",
+                      isOpen && "rotate-180 text-emerald-glow"
+                    )}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-6 pb-5 text-sm leading-relaxed text-ink/50">{item.a}</p>
+                    </motion.div>
                   )}
-                />
-              </button>
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="px-6 pb-5 text-sm leading-relaxed text-ink/50">{item.a}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                </AnimatePresence>
+              </div>
+            </Reveal>
           );
         })}
       </div>

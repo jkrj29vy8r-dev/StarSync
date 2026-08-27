@@ -1,22 +1,33 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { motion, useSpring } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { ArrowUp, MessageSquareText, ShieldCheck, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 
 const spring = { type: "spring" as const, stiffness: 300, damping: 30 };
+const tiltSpring = { stiffness: 150, damping: 20, mass: 0.5 };
 
-function useAnimatedNumber(target: number) {
+function useAnimatedNumber(target: number, decimals = 0) {
   const value = useSpring(target, { stiffness: 300, damping: 30, mass: 0.6 });
-  const [display, setDisplay] = useState(Math.round(target));
+  const [display, setDisplay] = useState(target);
 
   useEffect(() => {
     value.set(target);
   }, [target, value]);
 
-  useEffect(() => value.on("change", (latest) => setDisplay(Math.round(latest))), [value]);
+  useEffect(() => {
+    const factor = 10 ** decimals;
+    return value.on("change", (latest) => setDisplay(Math.round(latest * factor) / factor));
+  }, [value, decimals]);
 
   return display;
 }
@@ -32,11 +43,30 @@ function Card({
   description: string;
   children: ReactNode;
 }) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useTransform(useSpring(mouseY, tiltSpring), [-0.5, 0.5], ["7deg", "-7deg"]);
+  const rotateY = useTransform(useSpring(mouseX, tiltSpring), [-0.5, 0.5], ["-7deg", "7deg"]);
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
+
   return (
     <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       whileHover={{ scale: 1.015, borderColor: "rgba(255,255,255,0.16)" }}
       transition={spring}
-      className="relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111315] p-6 shadow-inset-hairline"
+      style={{ rotateX, rotateY, transformPerspective: 900 }}
+      className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#111315] p-6 shadow-inset-hairline"
     >
       <div
         aria-hidden
@@ -143,16 +173,51 @@ const FEED_EVENTS: FeedEvent[] = [
   { business: "AutoService Nord", message: "SMS livrat cu succes", tone: "neutral" },
 ];
 
+const LEAD_POOL: FeedEvent[] = [
+  { business: "Cabinet Stomatologic Prieteni", message: "Lead nou: programare confirmată", tone: "neutral" },
+  { business: "Pizzeria Bella Napoli", message: "Recenzie nouă de 5 stele captată", tone: "positive" },
+  { business: "Beauty Studio Iris", message: "Feedback negativ interceptat și privatizat", tone: "intercepted" },
+  { business: "Service Moto Expert", message: "Cerere de recenzie trimisă", tone: "neutral" },
+];
+
+function useLeadTicker() {
+  const [lead, setLead] = useState<(FeedEvent & { id: number }) | null>(null);
+
+  useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout>;
+    const interval = setInterval(() => {
+      const pick = LEAD_POOL[Math.floor(Math.random() * LEAD_POOL.length)];
+      setLead({ ...pick, id: Date.now() });
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => setLead(null), 2600);
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(hideTimer);
+    };
+  }, []);
+
+  return lead;
+}
+
 function toneIcon(tone: FeedEvent["tone"]) {
   if (tone === "positive") return Star;
   if (tone === "intercepted") return ShieldCheck;
   return MessageSquareText;
 }
 
-function FeedRow({ event }: { event: FeedEvent }) {
+function FeedRow({ event, isNew }: { event: FeedEvent; isNew?: boolean }) {
   const Icon = toneIcon(event.tone);
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl border px-3 py-2.5",
+        isNew
+          ? "border-emerald-glow/40 bg-[#0d1712] shadow-glow-emerald"
+          : "border-white/[0.06] bg-white/[0.02]"
+      )}
+    >
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
@@ -170,12 +235,18 @@ function FeedRow({ event }: { event: FeedEvent }) {
         <p className="truncate text-xs font-medium text-ink/85">{event.business}</p>
         <p className="truncate text-[11px] text-ink/40">{event.message}</p>
       </div>
+      {isNew && (
+        <span className="shrink-0 rounded-full bg-emerald-glow px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#04120c]">
+          Nou
+        </span>
+      )}
     </div>
   );
 }
 
 function LiveActivityCard() {
   const loop = [...FEED_EVENTS, ...FEED_EVENTS];
+  const newLead = useLeadTicker();
 
   return (
     <Card
@@ -193,6 +264,21 @@ function LiveActivityCard() {
             <FeedRow key={`${event.business}-${i}`} event={event} />
           ))}
         </motion.div>
+
+        <AnimatePresence>
+          {newLead && (
+            <motion.div
+              key={newLead.id}
+              initial={{ opacity: 0, y: -16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="absolute inset-x-0 top-0 z-10"
+            >
+              <FeedRow event={newLead} isNew />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Card>
   );
@@ -254,13 +340,22 @@ function RankingPreview({
 }
 
 function RankingVisualizerCard() {
+  const [inView, setInView] = useState(false);
+  const rank = useAnimatedNumber(inView ? 1 : 7);
+  const rating = useAnimatedNumber(inView ? 4.9 : 3.9, 1);
+  const reviews = useAnimatedNumber(inView ? 240 : 12);
+
   return (
     <Card
       eyebrow="Local SEO"
       title="Vizualizator ranking Google Maps"
       description="Aceeași afacere, înainte și după StarSync."
     >
-      <div className="flex flex-col items-center gap-3">
+      <motion.div
+        onViewportEnter={() => setInView(true)}
+        viewport={{ once: true, amount: 0.6 }}
+        className="flex flex-col items-center gap-3"
+      >
         <RankingPreview positionLabel="Fără StarSync" rank={7} rating={3.9} reviews={12} />
 
         <motion.div
@@ -272,24 +367,36 @@ function RankingVisualizerCard() {
           <span className="text-[10px] font-semibold">+6 poziții</span>
         </motion.div>
 
-        <RankingPreview positionLabel="Cu StarSync" rank={1} rating={4.9} reviews={240} highlight />
-      </div>
+        <RankingPreview
+          positionLabel="Cu StarSync"
+          rank={Math.round(rank)}
+          rating={rating}
+          reviews={Math.round(reviews)}
+          highlight
+        />
+      </motion.div>
     </Card>
   );
 }
 
 export function BentoGrid() {
+  const cards = [<ROIEstimatorCard key="roi" />, <LiveActivityCard key="feed" />, <RankingVisualizerCard key="rank" />];
+
   return (
     <section className="relative mx-auto max-w-6xl px-6 py-24">
-      <SectionHeading
-        eyebrow="De ce trec afacerile de top la StarSync"
-        title="Reputația ta, pe pilot automat"
-        description="Trei motoare care lucrează simultan: automatizare, predictibilitate și vizibilitate locală."
-      />
+      <Reveal>
+        <SectionHeading
+          eyebrow="De ce trec afacerile de top la StarSync"
+          title="Reputația ta, pe pilot automat"
+          description="Trei motoare care lucrează simultan: automatizare, predictibilitate și vizibilitate locală."
+        />
+      </Reveal>
       <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <ROIEstimatorCard />
-        <LiveActivityCard />
-        <RankingVisualizerCard />
+        {cards.map((card, i) => (
+          <Reveal key={card.key} delay={i * 0.1} className="h-full">
+            {card}
+          </Reveal>
+        ))}
       </div>
     </section>
   );

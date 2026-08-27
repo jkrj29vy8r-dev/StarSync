@@ -1,5 +1,6 @@
 import { Check, Minus } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -39,13 +40,15 @@ function Cell({ value }: { value: boolean | string }) {
 export function Comparison() {
   return (
     <section id="comparație" className="relative mx-auto max-w-5xl px-6 py-24">
-      <SectionHeading
-        eyebrow="Comparație"
-        title="De ce StarSync, nu procesul manual"
-        description="Cerutul recenziilor pe cont propriu costă timp; platformele generice costă bani pe fiecare recenzie."
-      />
+      <Reveal>
+        <SectionHeading
+          eyebrow="Comparație"
+          title="De ce StarSync, nu procesul manual"
+          description="Cerutul recenziilor pe cont propriu costă timp; platformele generice costă bani pe fiecare recenzie."
+        />
+      </Reveal>
 
-      <div className="mt-14 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111315] shadow-inset-hairline">
+      <Reveal delay={0.1} className="mt-14 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111315] shadow-inset-hairline">
         <div className="grid grid-cols-4 border-b border-white/[0.06] px-6 py-4 text-xs font-medium text-ink/40">
           <span className="col-span-1" />
           <span className="text-center text-emerald-glow">StarSync</span>
@@ -66,7 +69,7 @@ export function Comparison() {
             <Cell value={row.competitor} />
           </div>
         ))}
-      </div>
+      </Reveal>
     </section>
   );
 }

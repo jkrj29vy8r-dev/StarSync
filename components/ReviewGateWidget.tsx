@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Star, MapPin, Lock, CheckCircle2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { playPopSound } from "@/lib/sound";
+import { BorderBeam } from "./BorderBeam";
 
 type GateState = "idle" | "positive" | "negative";
 
@@ -13,24 +14,26 @@ const spring = { type: "spring" as const, stiffness: 300, damping: 30 };
 const CONFETTI_COLORS = ["#10B981", "#34D399", "#EDEDED", "#6EE7B7"];
 
 function Confetti() {
-  const pieces = Array.from({ length: 24 });
+  const pieces = Array.from({ length: 28 });
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
       {pieces.map((_, i) => {
-        const left = Math.random() * 100;
-        const delay = Math.random() * 0.3;
-        const duration = 1.1 + Math.random() * 0.8;
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 60 + Math.random() * 100;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        const delay = Math.random() * 0.12;
+        const duration = 0.6 + Math.random() * 0.5;
         const color = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
-        const size = 4 + Math.random() * 4;
+        const size = 4 + Math.random() * 5;
         return (
           <motion.span
             key={i}
-            initial={{ y: -20, x: `${left}%`, opacity: 1, rotate: 0 }}
-            animate={{ y: "120%", opacity: 0, rotate: 360 }}
-            transition={{ duration, delay, ease: "easeIn" }}
-            className="absolute top-0 block rounded-sm"
+            initial={{ x: 0, y: 0, opacity: 1, scale: 0 }}
+            animate={{ x, y, opacity: 0, scale: 1, rotate: (Math.random() - 0.5) * 360 }}
+            transition={{ duration, delay, ease: "easeOut" }}
+            className="absolute left-1/2 top-1/2 block rounded-sm"
             style={{
-              left: `${left}%`,
               width: size,
               height: size,
               backgroundColor: color,
@@ -67,6 +70,7 @@ export function ReviewGateWidget() {
   return (
     <div className="relative mx-auto w-full max-w-md">
       <div className="glass-panel relative overflow-hidden rounded-2xl p-6 shadow-card-hover">
+        <BorderBeam duration={8} />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-grid-fade"
@@ -106,25 +110,39 @@ export function ReviewGateWidget() {
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((value) => {
                     const active = (hovered || rating) >= value;
+                    const isIdle = hovered === 0 && rating === 0;
                     return (
-                      <button
+                      <motion.button
                         key={value}
                         type="button"
                         aria-label={`${value} stele`}
                         onMouseEnter={() => handleHover(value)}
                         onMouseLeave={() => setHovered(0)}
                         onClick={() => handleSelect(value)}
-                        className="transition-transform duration-150 hover:scale-110 active:scale-95"
+                        animate={isIdle ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+                        transition={
+                          isIdle
+                            ? {
+                                duration: 1.3,
+                                repeat: Infinity,
+                                repeatDelay: 0.6,
+                                delay: value * 0.07,
+                                ease: "easeInOut",
+                              }
+                            : spring
+                        }
+                        whileHover={{ scale: 1.25, transition: spring }}
+                        whileTap={{ scale: 0.9 }}
                       >
                         <Star
                           className={cn(
                             "h-9 w-9 transition-colors duration-150",
                             active
-                              ? "fill-emerald-glow text-emerald-glow"
+                              ? "fill-emerald-glow text-emerald-glow drop-shadow-[0_0_8px_rgba(16,185,129,0.85)]"
                               : "fill-transparent text-white/20"
                           )}
                         />
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>

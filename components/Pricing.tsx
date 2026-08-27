@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
 import { GlowButton } from "./GlowButton";
+import { Reveal } from "./Reveal";
 import { cn } from "@/lib/utils";
 
 interface Plan {
@@ -56,51 +57,54 @@ const PLANS: Plan[] = [
 export function Pricing() {
   return (
     <section id="prețuri" className="relative mx-auto max-w-6xl px-6 py-24">
-      <SectionHeading
-        eyebrow="Prețuri"
-        title="Simplu, transparent, fără comisioane ascunse"
-        description="Plătești un abonament fix — niciodată per recenzie captată."
-      />
+      <Reveal>
+        <SectionHeading
+          eyebrow="Prețuri"
+          title="Simplu, transparent, fără comisioane ascunse"
+          description="Plătești un abonament fix — niciodată per recenzie captată."
+        />
+      </Reveal>
       <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.name}
-            className={cn(
-              "relative flex flex-col rounded-2xl border p-7 shadow-inset-hairline",
-              plan.highlighted
-                ? "border-emerald-glow/40 bg-gradient-to-b from-emerald-glow/[0.08] to-[#111315]"
-                : "border-white/[0.08] bg-[#111315]"
-            )}
-          >
-            {plan.highlighted && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-glow px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#04120c]">
-                Cel mai ales
-              </span>
-            )}
-            <h3 className="text-lg font-semibold tracking-tight text-ink">{plan.name}</h3>
-            <p className="mt-1.5 text-sm text-ink/50">{plan.description}</p>
-            <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-4xl font-semibold tracking-tightest text-ink">
-                {plan.price}
-              </span>
-              <span className="text-sm text-ink/40">{plan.period}</span>
-            </div>
-            <ul className="mt-6 flex-1 space-y-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm text-ink/70">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-glow" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <GlowButton
-              variant={plan.highlighted ? "primary" : "ghost"}
-              showArrow={false}
-              className="mt-8 w-full justify-center"
+        {PLANS.map((plan, i) => (
+          <Reveal key={plan.name} delay={i * 0.1} className="h-full">
+            <div
+              className={cn(
+                "relative flex h-full flex-col rounded-2xl border p-7 shadow-inset-hairline",
+                plan.highlighted
+                  ? "border-emerald-glow/40 bg-gradient-to-b from-emerald-glow/[0.08] to-[#111315]"
+                  : "border-white/[0.08] bg-[#111315]"
+              )}
             >
-              {plan.name === "Enterprise" ? "Contactează-ne" : "Alege planul"}
-            </GlowButton>
-          </div>
+              {plan.highlighted && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-glow px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#04120c]">
+                  Cel mai ales
+                </span>
+              )}
+              <h3 className="text-lg font-semibold tracking-tight text-ink">{plan.name}</h3>
+              <p className="mt-1.5 text-sm text-ink/50">{plan.description}</p>
+              <div className="mt-6 flex items-baseline gap-1">
+                <span className="text-4xl font-semibold tracking-tightest text-ink">
+                  {plan.price}
+                </span>
+                <span className="text-sm text-ink/40">{plan.period}</span>
+              </div>
+              <ul className="mt-6 flex-1 space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-ink/70">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-glow" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <GlowButton
+                variant={plan.highlighted ? "primary" : "ghost"}
+                showArrow={false}
+                className="mt-8 w-full justify-center"
+              >
+                {plan.name === "Enterprise" ? "Contactează-ne" : "Alege planul"}
+              </GlowButton>
+            </div>
+          </Reveal>
         ))}
       </div>
     </section>

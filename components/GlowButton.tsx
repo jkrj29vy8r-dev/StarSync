@@ -3,15 +3,20 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { playPopSound } from "@/lib/sound";
+import { BorderBeam } from "./BorderBeam";
 import { ArrowRight } from "lucide-react";
 
 interface GlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "ghost";
   showArrow?: boolean;
+  withBeam?: boolean;
 }
 
 export const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
-  ({ className, variant = "primary", showArrow = true, children, onClick, ...props }, ref) => {
+  (
+    { className, variant = "primary", showArrow = true, withBeam = false, children, onClick, ...props },
+    ref
+  ) => {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       playPopSound("click");
       onClick?.(e);
@@ -43,6 +48,7 @@ export const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
         )}
         {...props}
       >
+        {withBeam && <BorderBeam duration={4} colorFrom="#FFFFFF" colorVia="#D1FAE5" />}
         <span className="relative z-10 flex items-center gap-2">
           {children}
           {showArrow && (

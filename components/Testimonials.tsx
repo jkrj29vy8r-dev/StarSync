@@ -1,5 +1,6 @@
 import { Star, Quote } from "lucide-react";
 import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 
 interface Testimonial {
   quote: string;
@@ -39,35 +40,36 @@ const TESTIMONIALS: Testimonial[] = [
 export function Testimonials() {
   return (
     <section className="relative mx-auto max-w-6xl px-6 py-24">
-      <SectionHeading
-        eyebrow="Rezultate reale"
-        title="Afacerile care au trecut la StarSync nu se mai întorc"
-        description="Peste 2.100 de afaceri locale își gestionează astăzi reputația automat."
-      />
+      <Reveal>
+        <SectionHeading
+          eyebrow="Rezultate reale"
+          title="Afacerile care au trecut la StarSync nu se mai întorc"
+          description="Peste 2.100 de afaceri locale își gestionează astăzi reputația automat."
+        />
+      </Reveal>
       <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
-        {TESTIMONIALS.map((t) => (
-          <div
-            key={t.name}
-            className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#111315] p-6 shadow-inset-hairline"
-          >
-            <Quote className="h-5 w-5 text-emerald-glow/50" />
-            <p className="mt-4 flex-1 text-sm leading-relaxed text-ink/70">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-            <div className="mt-6 flex items-center gap-3 border-t border-white/[0.06] pt-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-xs font-semibold text-ink/80">
-                {t.initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-ink">{t.name}</p>
-                <p className="truncate text-[11px] text-ink/40">{t.role}</p>
-              </div>
-              <div className="flex items-center gap-1 rounded-full bg-emerald-glow/10 px-2 py-1 text-[10px] font-medium text-emerald-glow">
-                <Star className="h-2.5 w-2.5 fill-emerald-glow" />
-                {t.metric}
+        {TESTIMONIALS.map((t, i) => (
+          <Reveal key={t.name} delay={i * 0.1} className="h-full">
+            <div className="flex h-full flex-col rounded-2xl border border-white/[0.08] bg-[#111315] p-6 shadow-inset-hairline">
+              <Quote className="h-5 w-5 text-emerald-glow/50" />
+              <p className="mt-4 flex-1 text-sm leading-relaxed text-ink/70">
+                &ldquo;{t.quote}&rdquo;
+              </p>
+              <div className="mt-6 flex items-center gap-3 border-t border-white/[0.06] pt-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.08] text-xs font-semibold text-ink/80">
+                  {t.initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-ink">{t.name}</p>
+                  <p className="truncate text-[11px] text-ink/40">{t.role}</p>
+                </div>
+                <div className="flex items-center gap-1 rounded-full bg-emerald-glow/10 px-2 py-1 text-[10px] font-medium text-emerald-glow">
+                  <Star className="h-2.5 w-2.5 fill-emerald-glow" />
+                  {t.metric}
+                </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>

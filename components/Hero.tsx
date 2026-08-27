@@ -1,14 +1,28 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
 import { Star } from "lucide-react";
 import { GlowButton } from "./GlowButton";
 import { ReviewGateWidget } from "./ReviewGateWidget";
 import { SocialProof } from "./SocialProof";
 
 export function Hero() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  }
+
+  const spotlight = useMotionTemplate`radial-gradient(500px circle at ${mouseX}px ${mouseY}px, rgba(16,185,129,0.08), transparent 70%)`;
+
   return (
-    <section className="relative overflow-hidden px-6 pb-24 pt-28 sm:pt-36">
+    <section
+      onMouseMove={handleMouseMove}
+      className="relative overflow-hidden px-6 pb-24 pt-28 sm:pt-36"
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] bg-grid-fade"
@@ -16,6 +30,11 @@ export function Hero() {
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]"
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{ background: spotlight }}
       />
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-16 lg:grid-cols-[1.1fr_0.9fr]">
@@ -62,7 +81,7 @@ export function Hero() {
             transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.15 }}
             className="mt-8 flex flex-wrap items-center gap-3"
           >
-            <GlowButton>Începe gratuit, 14 zile</GlowButton>
+            <GlowButton withBeam>Începe gratuit, 14 zile</GlowButton>
             <GlowButton variant="ghost" showArrow={false}>
               Vezi demo live
             </GlowButton>
