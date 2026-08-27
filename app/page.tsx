@@ -1,6 +1,6 @@
 import { Nav } from "@/components/Nav";
 import { Hero } from "@/components/Hero";
-import { BentoGrid } from "@/components/BentoGrid";
+import { BentoGrid } from "@/components/bento-grid";
 import { Testimonials } from "@/components/Testimonials";
 import { Comparison } from "@/components/Comparison";
 import { Integrations } from "@/components/Integrations";
