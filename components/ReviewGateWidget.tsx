@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Star, MapPin, Lock, CheckCircle2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { playPopSound } from "@/lib/sound";
 
 type GateState = "idle" | "positive" | "negative";
 
@@ -48,7 +49,14 @@ export function ReviewGateWidget() {
 
   const handleSelect = (value: number) => {
     setRating(value);
-    setState(value >= 4 ? "positive" : "negative");
+    const positive = value >= 4;
+    playPopSound(positive ? "success" : "star");
+    setState(positive ? "positive" : "negative");
+  };
+
+  const handleHover = (value: number) => {
+    if (value !== hovered) playPopSound("click");
+    setHovered(value);
   };
 
   const reset = () => {
@@ -103,7 +111,7 @@ export function ReviewGateWidget() {
                         key={value}
                         type="button"
                         aria-label={`${value} stele`}
-                        onMouseEnter={() => setHovered(value)}
+                        onMouseEnter={() => handleHover(value)}
                         onMouseLeave={() => setHovered(0)}
                         onClick={() => handleSelect(value)}
                         className="transition-transform duration-150 hover:scale-110 active:scale-95"

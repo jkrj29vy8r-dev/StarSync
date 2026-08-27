@@ -2,6 +2,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { playPopSound } from "@/lib/sound";
 import { ArrowRight } from "lucide-react";
 
 interface GlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,31 +13,7 @@ interface GlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
   ({ className, variant = "primary", showArrow = true, children, onClick, ...props }, ref) => {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (typeof window !== "undefined") {
-        try {
-          const AudioCtx =
-            window.AudioContext ||
-            (window as unknown as { webkitAudioContext: typeof AudioContext })
-              .webkitAudioContext;
-          const ctx = new AudioCtx();
-          const oscillator = ctx.createOscillator();
-          const gain = ctx.createGain();
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(720, ctx.currentTime);
-          oscillator.frequency.exponentialRampToValueAtTime(
-            920,
-            ctx.currentTime + 0.08
-          );
-          gain.gain.setValueAtTime(0.06, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
-          oscillator.connect(gain);
-          gain.connect(ctx.destination);
-          oscillator.start();
-          oscillator.stop(ctx.currentTime + 0.13);
-        } catch {
-          // audio feedback is a non-critical enhancement
-        }
-      }
+      playPopSound("click");
       onClick?.(e);
     };
 
